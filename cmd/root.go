@@ -31,13 +31,19 @@ echo "foo bar baz" | mask
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 	Run: func(cmd *cobra.Command, args []string) {
-		if !hasDataInStdIn() {
+		info, err := os.Stdin.Stat()
+		if err != nil {
+			fmt.Printf("Error while accessing stdin: %s", err)
+			os.Exit(1)
+		}
+		if (info.Mode() & os.ModeCharDevice) == 0 {
+			m := mask.LoadMasks()
+
+			mw := mask.NewMaskedWriter(m, os.Stdin, os.Stdout)
+			mw.Write()
 			os.Exit(0)
 		}
-		m := mask.LoadMasks()
-
-		mw := mask.NewMaskedWriter(m, os.Stdin, os.Stdout)
-		mw.Write()
+		fmt.Println("mask works with data piped to the command e.g.: `ls -al | mask`")
 	},
 }
 
@@ -49,15 +55,6 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-}
-
-func hasDataInStdIn() bool {
-	std := os.Stdin
-	stdInfo, err := std.Stat()
-	if err != nil {
-		return false
-	}
-	return stdInfo.Size() > 0
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -75,6 +72,8 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Error processing config file")
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			fmt.Printf("Error processing config file %s\n", err)
+		}
 	}
 }
