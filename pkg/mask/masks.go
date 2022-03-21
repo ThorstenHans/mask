@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultMaskChar = "*"
+	DefaultMaskChar = "*"
 )
 
 type Masks struct {
@@ -38,7 +38,7 @@ func LoadMasks() *Masks {
 	var m Masks
 	if err := viper.Unmarshal(&m); err != nil {
 		m = Masks{
-			MaskChar: defaultMaskChar,
+			MaskChar: DefaultMaskChar,
 			Values:   make([]string, 0),
 		}
 		m.Save()

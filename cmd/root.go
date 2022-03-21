@@ -55,6 +55,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	viper.SetDefault("maskChar", mask.DefaultMaskChar)
 }
 
 // initConfig reads in config file and ENV variables if set.
